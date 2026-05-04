@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Entrevistas - FOL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pulse-soft { animation: pulseSoft 2s infinite; }
+        @keyframes pulseSoft { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-slate-800 text-white shadow-lg">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                <h1 class="text-xl font-semibold">Simulador de Entrevistas FOL</h1>
+            </div>
+            <div class="text-sm text-slate-400">Módulo de Formación y Orientación Laboral</div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-6 py-8">
+        
+        <!-- Progress Bar -->
+        <div id="progressBar" class="hidden mb-6">
+            <div class="flex justify-between text-sm text-slate-600 mb-2">
+                <span>Pregunta <span id="currentQ">1</span> de 5</span>
+                <span>Puntuación: <span id="currentScore">0</span>/100</span>
+            </div>
+            <div class="w-full bg-slate-300 rounded-full h-2">
+                <div id="progressFill" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 20%"></div>
+            </div>
+        </div>
+
+        <!-- Interview Room -->
+        <div id="interviewRoom" class="bg-white rounded-xl shadow-xl overflow-hidden">
+            
+            <!-- Interviewer Section -->
+            <div class="bg-slate-50 border-b border-slate-200 p-8">
+                <div class="flex items-center space-x-6">
+                    <!-- Avatar SVG -->
+                    <div class="relative">
+                        <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg pulse-soft">
+                            <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <h2 class="text-lg font-semibold text-slate-800">Entrevistador Virtual</h2>
+                        <p class="text-slate-500 text-sm">RRHH - Departamento de Selección</p>
+                        <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            En línea
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Area -->
+            <div id="questionArea" class="p-8 min-h-[400px]">
+                <!-- Start Screen -->
+                <div id="startScreen" class="text-center py-12">
+                    <div class="mb-6">
+                        <svg class="w-20 h-20 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-3">Preparación de Entrevistas de Trabajo</h2>
+                        <p class="text-slate-600 max-w-lg mx-auto mb-6">
+                            Responde a 5 preguntas clásicas de entrevista. Elige la opción más profesional 
+                            para conseguir el puesto.
+                        </p>
+                        <button onclick="startInterview()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-all transform hover:scale-105">
+                            Comenzar Simulación
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Question Display -->
+                <div id="questionDisplay" class="hidden fade-in">
+                    <div class="mb-8">
+                        <div class="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
+                            <p id="questionText" class="text-xl text-slate-800 font-medium leading-relaxed">
+                                <!-- Question will be inserted here -->
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Selecciona tu respuesta:</p>
+                        
+                        <button onclick="selectAnswer(0)" id="option0" class="w-full text-left p-5 rounded-lg border-2 border-slate-200 hover:border-red-300 hover:bg-red-50 transition-all group">
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 group-hover:bg-red-200 flex items-center justify-center text-sm font-bold text-slate-600 group-hover:text-red-700">A</span>
+                                <span id="text0" class="text-slate-700 group-hover:text-red-900"></span>
+                            </div>
+                        </button>
+
+                        <button onclick="selectAnswer(1)" id="option1" class="w-full text-left p-5 rounded-lg border-2 border-slate-200 hover:border-yellow-300 hover:bg-yellow-50 transition-all group">
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 group-hover:bg-yellow-200 flex items-center justify-center text-sm font-bold text-slate-600 group-hover:text-yellow-700">B</span>
+                                <span id="text1" class="text-slate-700 group-hover:text-yellow-900"></span>
+                            </div>
+                        </button>
+
+                        <button onclick="selectAnswer(2)" id="option2" class="w-full text-left p-5 rounded-lg border-2 border-slate-200 hover:border-green-300 hover:bg-green-50 transition-all group">
+                            <div class="flex items-start space-x-3">
+                                <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-200 group-hover:bg-green-200 flex items-center justify-center text-sm font-bold text-slate-600 group-hover:text-green-700">C</span>
+                                <span id="text2" class="text-slate-700 group-hover:text-green-900"></span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Modal -->
+                <div id="feedbackModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto fade-in">
+                        <div id="feedbackHeader" class="p-6 rounded-t-xl">
+                            <div class="flex items-center space-x-3">
+                                <div id="feedbackIcon" class="w-12 h-12 rounded-full flex items-center justify-center">
+                                    <!-- Icon inserted by JS -->
+                                </div>
+                                <div>
+                                    <h3 id="feedbackTitle" class="text-xl font-bold"></h3>
+                                    <p id="feedbackSubtitle" class="text-sm opacity-90"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="mb-6">
+                                <h4 class="font-semibold text-slate-800 mb-2">Análisis de tu respuesta:</h4>
+                                <p id="feedbackText" class="text-slate-600 leading-relaxed"></p>
+                            </div>
+                            <div class="bg-slate-50 rounded-lg p-4 mb-6">
+                                <h4 class="font-semibold text-slate-800 mb-2">Consejo profesional:</h4>
+                                <p id="feedbackAdvice" class="text-slate-600 text-sm italic"></p>
+                            </div>
+                            <button onclick="nextQuestion()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                                Continuar →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Report -->
+                <div id="finalReport" class="hidden text-center py-8 fade-in">
+                    <div class="mb-8">
+                        <div id="resultIcon" class="w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center">
+                            <!-- Icon inserted by JS -->
+                        </div>
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">Informe de Contratación</h2>
+                        <p id="resultStatus" class="text-2xl font-semibold mb-4"></p>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-8 mb-8 text-left max-w-2xl mx-auto">
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                                <div class="text-3xl font-bold text-blue-600" id="finalScore">0</div>
+                                <div class="text-sm text-slate-600">Puntuación Total</div>
+                            </div>
+                            <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                                <div class="text-3xl font-bold text-slate-600" id="correctAnswers">0/5</div>
+                                <div class="text-sm text-slate-600">Respuestas Óptimas</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-slate-800 border-b pb-2">Evaluación Detallada:</h3>
+                            <div id="reportDetails" class="space-y-3 text-sm">
+                                <!-- Details inserted by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-all">
+                        Nueva Simulación
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <footer class="mt-8 text-center text-slate-500 text-sm">
+            <p>Módulo FOL - Formación y Orientación Laboral</p>
+            <p class="mt-1">Desarrollado para prácticas de entrevistas de trabajo</p>
+        </footer>
+    </main>
+
+    <script>
+        // Questions Database
+        const questions = [
+            {
+                question: "Háblame de un momento en que tuviste un conflicto con un compañero de trabajo. ¿Cómo lo resolviste?",
+                options: [
+                    {
+                        text: "Ese compañero era un incompetente. Le grité delante de todos para que entendiera quién mandaba. Al final tuvo que disculparse.",
+                        type: "aggressive",
+                        score: 0,
+                        feedback: "Esta respuesta demuestra falta de inteligencia emocional y habilidades de resolución de conflictos. Gritar y humillar a compañeros es inaceptable en cualquier entorno profesional.",
+                        advice: "Enfócate en la comunicación asertiva y la búsqueda de soluciones constructivas, nunca en el enfrentamiento personal."
+                    },
+                    {
+                        text: "Bueno, supongo que yo tenía la culpa. Intenté evitar el problema ignorándolo, pero al final tuve que pedir disculpas aunque no estuviera seguro de qué había hecho mal.",
+                        type: "submissive",
+                        score: 10,
+                        feedback: "Aunque muestras disposición a disculparte, evitar los conflictos no los resuelve. Esta respuesta sugiere falta de asertividad y puede interpretarse como inseguridad.",
+                        advice: "Es importante abordar los conflictos de frente, asumiendo responsabilidades cuando corresponda, pero también defendiendo tu posición de manera respetuosa."
+                    },
+                    {
+                        text: "Tuve diferencias con un compañero sobre la distribución de tareas. Solicité una reunión privada, expuse mi punto de vista con datos objetivos y escuché su perspectiva. Juntos llegamos a un acuerdo que mejoró nuestro flujo de trabajo.",
+                        type: "assertive",
+                        score: 20,
+                        feedback: "Excelente respuesta. Demuestras madurez profesional, habilidades de comunicación, resolución de problemas y trabajo en equipo. Esta es exactamente la actitud que buscan los empleadores.",
+                        advice: "Mantén este enfoque constructivo. La capacidad de resolver conflictos de manera profesional es una de las competencias más valoradas."
+                    }
+                ]
+            },
+            {
+                question: "¿Cuáles dirías que son tus principales puntos débiles o áreas de mejora?",
+                options: [
+                    {
+                        text: "Soy demasiado perfeccionista y trabajo demasiado. A veces me quedo hasta tarde porque no delego bien, pero es porque me importa mucho la calidad.",
+                        type: "cliche",
+                        score: 5,
+                        feedback: "Esta es una respuesta cliché que los reclutadores escuchan constantemente. Convertir una fortaleza en debilidad suena poco auténtico y evasivo.",
+                        advice: "Sé honesto sobre una debilidad real pero muestra cómo estás trabajando activamente para mejorarla."
+                    },
+                    {
+                        text: "La verdad es que no se me da bien trabajar bajo presión y me estreso fácilmente. También tengo problemas para levantarme temprano, pero intentaré mejorar.",
+                        type: "negative",
+                        score: 0,
+                        feedback: "Nunca menciones debilidades que sean requisitos básicos del puesto o que sugieran falta de compromiso. Esto genera dudas sobre tu capacidad para el rol.",
+                        advice: "Elige una debilidad real pero no crítica para el puesto, y enfócate en las acciones concretas que estás tomando para superarla."
+                    },
+                    {
+                        text: "Reconozco que a veces me cuesta delegar tareas porque me gusta tener el control. Sin embargo, he estado tomando cursos de liderazgo y practicando la confianza en mi equipo, lo que ha mejorado significativamente mi gestión del tiempo.",
+                        type: "assertive",
+                        score: 20,
+                        feedback: "Respuesta perfecta. Muestras autoconocimiento, honestidad y, lo más importante, proactividad para mejorar. Demuestras crecimiento profesional.",
+                        advice: "Esta fórmula (debilidad real + acción de mejora) es la más efectiva. Muestra que eres consciente de tus áreas de desarrollo y trabajas activamente en ellas."
+                    }
+                ]
+            },
+            {
+                question: "¿Por qué deberíamos contratarte a ti y no a otro candidato?",
+                options: [
+                    {
+                        text: "Porque necesito el trabajo urgentemente y estoy dispuesto a hacer lo que sea. Además, soy muy barato comparado con otros.",
+                        type: "desperate",
+                        score: 0,
+                        feedback: "Nunca te vendas por necesidad o precio. Esto devalúa tu perfil profesional y sugiere que no tienes otras opciones o confianza en tu valor.",
+                        advice: "Enfócate en el valor que aportas a la empresa, no en tus necesidades personales."
+                    },
+                    {
+                        text: "Bueno, supongo que soy una persona normal. Tengo los estudios requeridos y haré lo que me digan. No soy el mejor, pero soy trabajador.",
+                        type: "submissive",
+                        score: 5,
+                        feedback: "Falta de confianza y diferenciación. No destacas ninguna cualidad única ni demuestras por qué serías un activo valioso para la empresa.",
+                        advice: "Prepara argumentos sólidos sobre tus fortalezas, logros y cómo puedes contribuir específicamente a los objetivos de la empresa."
+                    },
+                    {
+                        text: "Porque combino experiencia técnica en [área específica] con habilidades blandas desarrolladas en mis proyectos anteriores. En mi último puesto, aumenté la eficiencia un 20%. Estoy convencido de que puedo aportar resultados similares aquí, adaptándome rápidamente a su cultura empresarial.",
+                        type: "assertive",
+                        score: 20,
+                        feedback: "Respuesta excelente. Combinas datos concretos, confianza justificada y conocimiento de la empresa. Demuestras valor tangible.",
+                        advice: "Siempre respalda tus afirmaciones con ejemplos concretos y métricas cuando sea posible. Investiga la empresa para alinear tu respuesta con sus necesidades."
+                    }
+                ]
+            },
+            {
+                question: "¿Dónde te ves en 5 años?",
+                options: [
+                    {
+                        text: "La verdad, no lo sé. Depende de muchas cosas. Ojalá tenga un trabajo mejor pagado, pero si no, buscaré otra cosa.",
+                        type: "uncommitted",
+                        score: 0,
+                        feedback: "Falta de visión y compromiso. Sugiere que no tienes objetivos claros y que podrías abandonar la empresa rápidamente.",
+                        advice: "Muestra ambición profesional alineada con el crecimiento dentro de la empresa, no fuera de ella."
+                    },
+                    {
+                        text: "Espero estar en el mismo puesto, haciendo lo mismo. Me gusta la estabilidad y no me gustan los cambios ni las responsabilidades adicionales.",
+                        type: "stagnant",
+                        score: 5,
+                        feedback: "Aunque la estabilidad es válida, esta respuesta sugiere falta de ambición y resistencia al cambio, cualidades poco valoradas en entornos dinámicos.",
+                        advice: "Habla sobre crecimiento profesional, aprendizaje continuo y cómo ves tu evolución dentro de la organización."
+                    },
+                    {
+                        text: "Me veo habiendo desarrollado mis habilidades en [área relevante], habiendo contribuido significativamente al equipo y asumiendo mayores responsabilidades. Me gustaría crecer dentro de esta empresa, aportando valor y aprendiendo continuamente para alcanzar posiciones de mayor impacto.",
+                        type: "assertive",
+                        score: 20,
+                        feedback: "Perfecto. Muestras ambición, lealtad a la empresa y orientación al crecimiento. Demuestras que ves un futuro a largo plazo con ellos.",
+                        advice: "Investiga las posibilidades de crecimiento en la empresa y alinea tu respuesta con su estructura y valores."
+                    }
+                ]
+            },
+            {
+                question: "Cuéntame sobre un fracaso profesional y qué aprendiste de él.",
+                options: [
+                    {
+                        text: "Yo no fracaso. Siempre hago las cosas bien a la primera. Si algo sale mal, suele ser culpa de otros o de circunstancias externas.",
+                        type: "arrogant",
+                        score: 0,
+                        feedback: "Negar los fracasos demuestra falta de autoconciencia y humildad. Todos cometemos errores; lo importante es reconocerlos y aprender.",
+                        advice: "Admite un error real, asume responsabilidad y enfócate en el aprendizaje obtenido."
+                    },
+                    {
+                        text: "Una vez cometí un error grave en un proyecto y fue terrible. Aún me siento mal por ello. No supe cómo manejarlo y perdí la confianza del equipo.",
+                        type: "negative",
+                        score: 5,
+                        feedback: "Aunque reconoces el error, te quedas en lo negativo sin mostrar aprendizaje ni superación. Transmite victimización en lugar de resiliencia.",
+                        advice: "Estructura tu respuesta: situación, error, acción correctiva y aprendizaje. Termina siempre en positivo."
+                    },
+                    {
+                        text: "En mi primer proyecto importante, subestimé el tiempo necesario y no cumplí el plazo. Asumí la responsabilidad, comuniqué el retraso inmediatamente y trabajé horas extra para minimizar el impacto. Aprendí a planificar mejor y a comunicar proactivamente los riesgos. Desde entonces, nunca he vuelto a tener un retraso.",
+                        type: "assertive",
+                        score: 20,
+                        feedback: "Respuesta ejemplar. Muestras responsabilidad, capacidad de reacción, aprendizaje y mejora continua. Conviertes un fracaso en una fortaleza.",
+                        advice: "Elige un error real pero no catastrófico. Enfócate 20% en el error y 80% en la solución y el aprendizaje."
+                    }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let answers = [];
+
+        function startInterview() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('questionDisplay').classList.remove('hidden');
+            document.getElementById('progressBar').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('currentQ').textContent = currentQuestion + 1;
+            
+            // Update progress bar
+            const progress = ((currentQuestion) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // Load options
+            q.options.forEach((opt, index) => {
+                document.getElementById(`text${index}`).textContent = opt.text;
+                const btn = document.getElementById(`option${index}`);
+                btn.classList.remove('pointer-events-none', 'opacity-50');
+                btn.onclick = () => selectAnswer(index);
+            });
+        }
+
+        function selectAnswer(optionIndex) {
+            const q = questions[currentQuestion];
+            const selectedOption = q.options[optionIndex];
+            
+            // Disable all buttons
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`option${i}`).classList.add('pointer-events-none', 'opacity-50');
+            }
+
+            // Save answer
+            answers.push({
+                question: q.question.substring(0, 50) + '...',
+                option: selectedOption.type,
+                score: selectedOption.score,
+                feedback: selectedOption.feedback
+            });
+
+            score += selectedOption.score;
+            document.getElementById('currentScore').textContent = score;
+
+            // Show feedback
+            showFeedback(selectedOption);
+        }
+
+        function showFeedback(option) {
+            const modal = document.getElementById('feedbackModal');
+            const header = document.getElementById('feedbackHeader');
+            const icon = document.getElementById('feedbackIcon');
+            const title = document.getElementById('feedbackTitle');
+            const subtitle = document.getElementById('feedbackSubtitle');
+            
+            modal.classList.remove('hidden');
+
+            if (option.type === 'assertive') {
+                header.className = 'p-6 rounded-t-xl bg-green-100';
+                icon.innerHTML = '<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                title.textContent = '¡Excelente respuesta!';
+                title.className = 'text-xl font-bold text-green-900';
+                subtitle.textContent = '+20 puntos';
+                subtitle.className = 'text-sm text-green-700';
+            } else if (option.type === 'submissive' || option.type === 'cliche') {
+                header.className = 'p-6 rounded-t-xl bg-yellow-100';
+                icon.innerHTML = '<svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+                title.textContent = 'Respuesta mejorable';
+                title.className = 'text-xl font-bold text-yellow-900';
+                subtitle.textContent = '+5-10 puntos';
+                subtitle.className = 'text-sm text-yellow-700';
+            } else {
+                header.className = 'p-6 rounded-t-xl bg-red-100';
+                icon.innerHTML = '<svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+                title.textContent = 'Respuesta incorrecta';
+                title.className = 'text-xl font-bold text-red-900';
+                subtitle.textContent = '0 puntos';
+                subtitle.className = 'text-sm text-red-700';
+            }
+
+            document.getElementById('feedbackText').textContent = option.feedback;
+            document.getElementById('feedbackAdvice').textContent = option.advice;
+        }
+
+        function nextQuestion() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            currentQuestion++;
+
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalReport();
+            }
+        }
+
+        function showFinalReport() {
+            document.getElementById('questionDisplay').classList.add('hidden');
+            document.getElementById('progressBar').classList.add('hidden');
+            document.getElementById('finalReport').classList.remove('hidden');
+
+            const maxScore = questions.length * 20;
+            const percentage = (score / maxScore) * 100;
+            const correctCount = answers.filter(a => a.score === 20).length;
+
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('correctAnswers').textContent = `${correctCount}/5`;
+
+            const resultIcon = document.getElementById('resultIcon');
+            const resultStatus = document.getElementById('resultStatus');
+
+            if (percentage >= 70) {
+                resultIcon.className = 'w-24 h-24 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center';
+                resultIcon.innerHTML = '<svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                resultStatus.textContent = 'APTO - Contratado';
+                resultStatus.className = 'text-2xl font-semibold text-green-600 mb-4';
+            } else if (percentage >= 40) {
+                resultIcon.className = 'w-24 h-24 mx-auto mb-4 rounded-full bg-yellow-100 flex items-center justify-center';
+                resultIcon.innerHTML = '<svg class="w-12 h-12 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                resultStatus.textContent = 'PENDIENTE - Necesita mejorar';
+                resultStatus.className = 'text-2xl font-semibold text-yellow-600 mb-4';
+            } else {
+                resultIcon.className = 'w-24 h-24 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center';
+                resultIcon.innerHTML = '<svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+                resultStatus.textContent = 'NO APTO - No contratado';
+                resultStatus.className = 'text-2xl font-semibold text-red-600 mb-4';
+            }
+
+            // Generate detailed report
+            const detailsDiv = document.getElementById('reportDetails');
+            detailsDiv.innerHTML = '';
+            
+            answers.forEach((answer, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-start space-x-3 p-3 rounded-lg ' + 
+                    (answer.score === 20 ? 'bg-green-50' : answer.score > 0 ? 'bg-yellow-50' : 'bg-red-50');
+                
+                const icon = answer.score === 20 ? 
+                    '<svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
+                    answer.score > 0 ?
+                    '<svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>' :
+                    '<svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+
+                div.innerHTML = `
+                    ${icon}
+                    <div class="flex-1">
+                        <p class="font-medium text-slate-800 text-xs mb-1">Pregunta ${index + 1}</p>
+                        <p class="text-sm text-slate-600">${answer.feedback}</p>
+                    </div>
+                    <span class="text-sm font-bold ${answer.score === 20 ? 'text-green-600' : answer.score > 0 ? 'text-yellow-600' : 'text-red-600'}">
+                        +${answer.score}
+                    </span>
+                `;
+                detailsDiv.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
